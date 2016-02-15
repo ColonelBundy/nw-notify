@@ -592,7 +592,9 @@ function log(){
 gui.Window.get().on('close', function() {
   if (config.autoCleanup) {
     closeAll()
-    gui.App.quit()
+	setTimeout(function() {
+		gui.App.quit();
+	}, 1000);
   }
 })
 

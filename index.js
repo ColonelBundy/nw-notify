@@ -565,19 +565,21 @@ function setStyleOnDomElement(styleObj, domElement){
   }
 }
 
-function closeAll() {
-  // Clear out animation Queue and close windows
+function closeAll(callback) {
   animationQueue.clear()
-  _.forEach(activeNotifications, function(window) {
+
+  async.each(_.merge(activeNotifications, inactiveWindows), function(window, done) {
     window.close()
-  })
-  _.forEach(inactiveWindows, function(window) {
-    window.close()
-  })
-  // Reset certain vars
-  nextInsertPos = {}
-  activeNotifications = []
-  inactiveWindows = []
+    done();
+  }, function() {
+    // Reset certain vars
+    nextInsertPos = {}
+    activeNotifications = []
+    inactiveWindows = []
+    if(typeof callback === 'function') {
+      return callback();
+    }
+  });
 }
 
 function log(){
@@ -591,10 +593,9 @@ function log(){
  */
 gui.Window.get().on('close', function() {
   if (config.autoCleanup) {
-    closeAll()
-	setTimeout(function() {
-		gui.App.quit();
-	}, 1000);
+    closeAll(function() {
+      gui.App.quit();
+    });
   }
 })
 
